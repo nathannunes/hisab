@@ -19,79 +19,74 @@ struct CustomHeaderView: View {
 }
 
 struct ContentView: View {
+    @State private var isCreateGroupViewPresented = false
     @State private var groups: [Group] = []
-    @Environment(\.managedObjectContext) private var viewContext
-
-    @FetchRequest(
-        sortDescriptors: [NSSortDescriptor(keyPath: \Item.timestamp, ascending: true)],
-        animation: .default)
-    private var items: FetchedResults<Item>
 
     var body: some View {
         NavigationView {
             List {
-                ForEach(items) { item in
-                    NavigationLink(destination: Text("Item at \(item.timestamp!, formatter: itemFormatter)")) {
-                        Text(item.timestamp!, formatter: itemFormatter)
+                if(groups.isEmpty){
+                    Text("Please add groups to continue")
+                }else{
+                    ForEach(groups, id: \.id) { group in
+                        NavigationLink(destination: GroupDetailView(group: group)) {
+                            Text(group.name)
+                        }
                     }
                 }
-                .onDelete(perform: deleteItems)
+                
             }
-            .navigationBarTitle("", displayMode: .inline)
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    EditButton()
-                }
-                ToolbarItem(placement: .principal) {
+                            ToolbarItem(placement: .navigationBarLeading) {
+                                if(!groups.isEmpty){
+                                    EditButton()
+                                }else{
+                                    HStack {
+                                        Spacer();Spacer();Spacer();Spacer();Spacer()
+                                    }
+                                }
+                                
+                            }
+                            ToolbarItem(placement: .principal) {
+                                HStack {
+                                    Spacer();Spacer();Spacer();Spacer()
+                                    Spacer();Spacer();Spacer();Spacer();Spacer()
                                     Image("hisab_kitab")
                                         .resizable()
-                                        .frame(width: 150, height: 150)
-                                        .clipShape(Rectangle().offset(x: 10, y: 25).size(width: 120, height: 60))
-                                        
+                                        .frame(width: 200, height: 200)
+                                        .clipShape(Rectangle().offset(x: 10, y: 25).size(width: 160, height: 90))
+                                    Spacer()
+                                 }
+                            }
+                            ToolbarItem(placement: .navigationBarTrailing) {
+                                Button(action: {
+                                    isCreateGroupViewPresented = true
+                                }) {
+                                    Text("Add Group")
+                                        .padding(8)
+                                        .foregroundColor(.white)
+                                        .background(Color.blue)
+                                        .cornerRadius(60)
                                 }
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    NavigationLink(destination: CreateGroupView(groups: $groups)) {
-                        Text("Add Group")
-                            .padding(9)
-                            .foregroundColor(.white)
-                            .background(Color.blue)
-                            .cornerRadius(50)
-                    }
-                }
-
-            }
+                            }
+                        }
             
-        }
-    }
-
-    private func addItem() {
-        withAnimation {
-            //let newItem = CreateGroupView()
-            let newItem = Item(context: viewContext)
-            newItem.timestamp = Date()
-
-            do {
-                try viewContext.save()
-            } catch {
-                let nsError = error as NSError
-                fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
-            }
-        }
-    }
-
-    private func deleteItems(offsets: IndexSet) {
-        withAnimation {
-            offsets.map { items[$0] }.forEach(viewContext.delete)
-
-            do {
-                try viewContext.save()
-            } catch {
-                let nsError = error as NSError
-                fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
+            .sheet(isPresented: $isCreateGroupViewPresented) {
+                CreateGroupView(groups: $groups, isPresented: $isCreateGroupViewPresented)
             }
         }
     }
 }
+
+struct GroupDetailView: View {
+    let group: Group
+
+    var body: some View {
+        Text("Detail view for \(group.name)")
+            .navigationBarTitle(group.name)
+    }
+}
+
 
 private let itemFormatter: DateFormatter = {
     let formatter = DateFormatter()
@@ -102,6 +97,12 @@ private let itemFormatter: DateFormatter = {
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView().environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
+        // Example groups for preview
+        let groups: [Group] = [
+            Group(id: UUID(), name: "Group 1", expenses: [], personIDs: []),
+            Group(id: UUID(), name: "Group 2", expenses: [], personIDs: [])
+        ]
+        return ContentView()
     }
 }
+
