@@ -8,6 +8,7 @@
 import SwiftUI
 import CoreData
 
+
 struct CustomHeaderView: View {
     var body: some View {
         Image("hisab_kitab") // Replace with the name of your image asset
@@ -21,8 +22,14 @@ struct CustomHeaderView: View {
 struct ContentView: View {
     @State private var isCreateGroupViewPresented = false
     @State private var groups: [Group] = []
+    @State private var shouldNavigateToContentView = false
+    @StateObject var authViewModel = AuthViewModel()
 
     var body: some View {
+        if !authViewModel.isUserAuthenticated {
+                        // If not authenticated, present the login view
+                        LoginView(authViewModel: authViewModel).modifier(RootViewControllerModifier())
+                    }
         NavigationView {
             List {
                 if(groups.isEmpty){
@@ -75,7 +82,22 @@ struct ContentView: View {
                 CreateGroupView(groups: $groups, isPresented: $isCreateGroupViewPresented)
             }
         }
+        navigationDestination(isPresented: $shouldNavigateToContentView) {
+                        ContentView()
+                    }
+        
     }
+    func performFirebaseOperation() {
+            saveUserToFirebase { success in
+                DispatchQueue.main.async {
+                    if success {
+                        self.shouldNavigateToContentView = true
+                    } else {
+                        // Handle the error case
+                    }
+                }
+            }
+        }
 }
 
 struct GroupDetailView: View {
@@ -98,10 +120,10 @@ private let itemFormatter: DateFormatter = {
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         // Example groups for preview
-        let groups: [Group] = [
-            Group(id: UUID(), name: "Group 1", expenses: [], personIDs: []),
-            Group(id: UUID(), name: "Group 2", expenses: [], personIDs: [])
-        ]
+//        let groups: [Group] = [
+//            Group(id: UUID(), name: "Group 1", expenses: [], personIDs: []),
+//            Group(id: UUID(), name: "Group 2", expenses: [], personIDs: [])
+//        ]
         return ContentView()
     }
 }

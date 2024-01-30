@@ -21,10 +21,6 @@ struct CreateGroupView: View {
                 Section(header: Text("Create Group")) {
                     TextField("Group Name", text: $viewModel.groupName)
                 }
-                Section(header: Text("Add Expense")) {
-                    TextField("Amount", text: $viewModel.expenseAmount)
-                    TextField("Description", text: $viewModel.expenseDescription)
-                }
                 Section(header: Text("Add People  (swipe left to delete)")) {
                     List {
                         ForEach(personIDs, id: \.self) { personID in
@@ -40,10 +36,18 @@ struct CreateGroupView: View {
                     }
                 }
                 Section {
-                    NavigationLink(destination: ContentView()) {
-                        Text("Save")
+                    Button("Save") {
+                        viewModel.saveGroup(with: personIDs) { success in
+                            if success {
+                                // Dismiss the view and return to the home screen
+                                isPresented = false
+                            } else {
+                                // Handle the error (e.g., show an alert)
+                            }
+                        }
                     }
                 }
+
             }
             .navigationBarTitle("Create Group")
             .toolbar {
@@ -79,7 +83,7 @@ struct CreateGroupView_Previews: PreviewProvider {
     static var previews: some View {
         // Create a dummy array of groups for the preview
         let dummyGroups: [Group] = [
-            Group(id: UUID(), name: "Sample Group", expenses: [], personIDs: [])
+            Group(id: UUID(), name: "Sample Group", personIDs: [])
             // Add more sample groups if needed
         ]
 
