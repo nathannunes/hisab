@@ -47,29 +47,27 @@ func googleSignIn(presentingViewController: UIViewController, completion: @escap
                                                          accessToken: user.accessToken.tokenString)
 
           // [START_EXCLUDE]
-          signIn(with: credential)
+          signIn(with: credential, authViewModel: <#T##AuthViewModel#>)
           saveUserToFirebase(completion: completion)
           // [END_EXCLUDE]
         }
         // [END headless_google_auth]
       }
     
-func signIn(with credential: AuthCredential, authViewModel) {
-    // [START signin_google_credential]
+func signIn(with credential: AuthCredential, authViewModel: AuthViewModel) {
     Auth.auth().signIn(with: credential) { result, error in
-      // [START_EXCLUDE silent]
-      guard error == nil else { 
-          return }
-      // [END_EXCLUDE]
-
-      // At this point, our user is signed in
-      // [START_EXCLUDE silent]
-      // so we advance to the User View Controller
-      AuthViewModel()
-      // [END_EXCLUDE]
+        if let error = error {
+            // Handle error
+            print("Error saving user data: \(error.localizedDescription)")
+            return
+        }
+        
+        // Update AuthViewModel state here
+        DispatchQueue.main.async {
+            authViewModel.isUserAuthenticated = true
+        }
     }
-    // [END signin_google_credential]
-  }
+}
 
 /*
 GIDSignIn.sharedInstance.signIn(with: config, presenting: presentingViewController) { user, error in

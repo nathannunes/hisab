@@ -55,7 +55,8 @@ func saveUserData(_ user: User, in db: Firestore, completion: @escaping (Bool) -
         // Add other user details you need
     ]) { error in
         if let error = error {
-            // Handle the error
+            // Log the error or handle it as necessary
+            print("Error saving user data: \(error.localizedDescription)")
             completion(false)
         } else {
             // Data saved successfully

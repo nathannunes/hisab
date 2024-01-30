@@ -26,6 +26,7 @@ struct ContentView: View {
     @StateObject var authViewModel = AuthViewModel()
 
     var body: some View {
+        
         if !authViewModel.isUserAuthenticated {
                         // If not authenticated, present the login view
                         LoginView(authViewModel: authViewModel).modifier(RootViewControllerModifier())
