@@ -8,73 +8,73 @@
 import SwiftUI
 import CoreData
 
+import FirebaseDatabase
+
 struct CustomHeaderView: View {
     var body: some View {
         Image("hisab_kitab") // Replace with the name of your image asset
             .resizable()
-            .aspectRatio(contentMode: .fill)
-            .frame(height: 200) // Adjust the height of the header as needed
-            .clipped()
+            .scaledToFit()
+            .frame(height: 200)
     }
 }
 
 struct ContentView: View {
     @State private var isCreateGroupViewPresented = false
     @State private var groups: [Group] = []
-
+    @StateObject private var viewModel = GroupsViewModel()
+    
     var body: some View {
-        NavigationView {
-            List {
-                if(groups.isEmpty){
-                    Text("Please add groups to continue")
-                }else{
-                    ForEach(groups, id: \.id) { group in
-                        NavigationLink(destination: GroupDetailView(group: group)) {
-                            Text(group.name)
+            NavigationView {
+                List {
+                    if viewModel.groups.isEmpty {
+                        Text("Please add groups to continue")
+                    } else {
+                        ForEach(viewModel.groups, id: \.id) { group in
+                            NavigationLink(destination: GroupDetailView(group: group)) {
+                                Text(group.name)
+                            }
+                        }
+                        .onDelete(perform: deleteGroup)
+                    }
+                }
+                .navigationTitle("Groups")
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        if !viewModel.groups.isEmpty {
+                            EditButton()
+                        }
+                    }
+                    ToolbarItem(placement: .principal) {
+                        HStack {
+                            Spacer();Spacer();Spacer();Spacer()
+                            Spacer();Spacer();Spacer();Spacer();Spacer()
+                            Image("hisab_kitab")
+                                .resizable()
+                                .frame(width: 200, height: 200)
+                                .clipShape(Rectangle().offset(x: 10, y: 25).size(width: 160, height: 90))
+                            Spacer()
+                         }
+                    }
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button("Add Group") {
+                            isCreateGroupViewPresented = true
                         }
                     }
                 }
-                
-            }
-            .toolbar {
-                            ToolbarItem(placement: .navigationBarLeading) {
-                                if(!groups.isEmpty){
-                                    EditButton()
-                                }else{
-                                    HStack {
-                                        Spacer();Spacer();Spacer();Spacer();Spacer()
-                                    }
-                                }
-                                
-                            }
-                            ToolbarItem(placement: .principal) {
-                                HStack {
-                                    Spacer();Spacer();Spacer();Spacer()
-                                    Spacer();Spacer();Spacer();Spacer();Spacer()
-                                    Image("hisab_kitab")
-                                        .resizable()
-                                        .frame(width: 200, height: 200)
-                                        .clipShape(Rectangle().offset(x: 10, y: 25).size(width: 160, height: 90))
-                                    Spacer()
-                                 }
-                            }
-                            ToolbarItem(placement: .navigationBarTrailing) {
-                                Button(action: {
-                                    isCreateGroupViewPresented = true
-                                }) {
-                                    Text("Add Group")
-                                        .padding(8)
-                                        .foregroundColor(.white)
-                                        .background(Color.blue)
-                                        .cornerRadius(60)
-                                }
-                            }
-                        }
-            
-            .sheet(isPresented: $isCreateGroupViewPresented) {
-                CreateGroupView(groups: $groups, isPresented: $isCreateGroupViewPresented)
+                .sheet(isPresented: $isCreateGroupViewPresented) {
+                    // Assuming CreateGroupView can update the groups in ViewModel
+                    CreateGroupView(groups: $viewModel.groups, isPresented: $isCreateGroupViewPresented)
+                }
+            }.onAppear {
+                viewModel.fetchGroups() // Fetch groups when the view appears
             }
         }
+    
+
+     private func deleteGroup(at offsets: IndexSet) {
+        groups.remove(atOffsets: offsets)
+
     }
 }
 
@@ -87,22 +87,10 @@ struct GroupDetailView: View {
     }
 }
 
-
-private let itemFormatter: DateFormatter = {
-    let formatter = DateFormatter()
-    formatter.dateStyle = .short
-    formatter.timeStyle = .medium
-    return formatter
-}()
-
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
-        // Example groups for preview
-        let groups: [Group] = [
-            Group(id: UUID(), name: "Group 1", expenses: [], personIDs: []),
-            Group(id: UUID(), name: "Group 2", expenses: [], personIDs: [])
-        ]
-        return ContentView()
+        ContentView()
     }
 }
 
+// Note: Make sure the Group model is correctly defined and conforms to Identifiable if it's not a Core Data entity.
