@@ -79,7 +79,7 @@ struct CreateGroupView_Previews: PreviewProvider {
     static var previews: some View {
         // Create a dummy array of groups for the preview
         let dummyGroups: [Group] = [
-            Group(id: UUID(), name: "Sample Group", expenses: [], personIDs: [])
+            Group(id: UUID(), name: "Sample Group", personIDs: [])
             // Add more sample groups if needed
         ]
 

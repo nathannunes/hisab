@@ -6,11 +6,6 @@
 //
 
 import SwiftUI
-<<<<<<< Updated upstream
-
-@main
-struct hisabApp: App {
-=======
 import FirebaseCore
 
 // AppDelegate class for additional setup, especially for Firebase
@@ -28,7 +23,6 @@ struct hisabApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
 
     // Persistence controller, assuming this is for Core Data
->>>>>>> Stashed changes
     let persistenceController = PersistenceController.shared
 
     var body: some Scene {
